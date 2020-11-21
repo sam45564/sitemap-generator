@@ -1,27 +1,19 @@
 from xml.etree.ElementTree import Element, SubElement
+from xml.dom import minidom
 
 
-def create_parent(parent_name, attribute_dict=''):
-    """Returns parent element for an XML tree.
-    """
-    parent = Element(parent_name)
-    if attribute_dict != '':
-        for key in attribute_dict:
-            parent.set(key, attribute_dict[key])
-    return parent
+def create_element(element_name, element_text='', attributes=''):
+    new_element = Element(element_name)
+
+    if element_text != '':
+        new_element.text = element_text
+
+    if attributes != '':
+        for key in attributes:
+            new_element.set(key, attributes[key])
+
+    return new_element
 
 
-def create_child(parent_name, child_name, text_in_child=''):
-    """Returns child element for a given parent and assigns text if available.
-    """
-    child = SubElement(parent_name, child_name)
-    if text_in_child != '':
-        child.text = text_in_child
-    return child
-
-
-def set_child(parent_element, child_element):
-    """Sets child element for a given parent element.
-    """
-    parent_element = SubElement(parent_element, child_element)
-    return parent_element
+def append_element(parent, child):
+    return parent.append(child)

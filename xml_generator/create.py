@@ -1,21 +1,26 @@
 from .element_creator import *
+from datetime import date, datetime
 from .prettify import *
 
 
-def create(data):
-    """Return prettify XML string for the given 'data'
+def create(url_list):
+    """Return prettify XML string for the given 'url_list'
     """
-    root_attributes = {
+    document_attributes = {
         'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
         'xsi:schemaLocation': 'http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd'
     }
-    root = create_parent('urlset', root_attributes)
 
-    for url in data:
-        url_elem = create_parent('url')
-        loc_child = create_child(url_elem, 'loc', url)
-        lastmod_child = create_child(url_elem, 'last_mod', '')
-        priority_child = create_child(url_elem, 'priority', 1)
-        root = set_child(root, url_elem)
+    urlset = create_element('urlset', '', document_attributes)
 
-    return prettify(root)
+    for url in url_list:
+        url_elem = create_element('url')
+        loc = append_element(url_elem, create_element('loc', url))
+        last_modified = append_element(
+            url_elem, create_element('lastmod', date.today().strftime(
+                "%Y-%m-%dT") + datetime.now().strftime("%H:%M:%S+00:00")))
+        priority = append_element(url_elem, create_element('priority', '1.00'))
+
+        append_element(urlset, url_elem)
+
+    return prettify(urlset)
