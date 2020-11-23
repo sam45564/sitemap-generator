@@ -12,19 +12,16 @@ def scrape(url=seed_url):
 
     while len(links) != 0:
         each_link = links[0]
-        if each_link not in results and "whenabongcooks.com/" in each_link:
+        if each_link not in results and "whenabongcooks.com/" in each_link and "#" not in each_link:
             results.append(each_link)
             s = get_html_content(each_link)
             if s != "":
                 new_list_of_links = get_anchor_elements(s)
 
-                old_len = len(links)
-
                 links.extend(new_list_of_links)
                 links = remove_items(links, each_link)
 
-                new_len = len(links)
-                print(f"Links length: {len(links)} ({new_len - old_len}) \n")
+                print(f"Results: {len(results)}, Links: {len(links)}\n")
         else:
             links = remove_items(links, each_link)
 
@@ -33,9 +30,12 @@ def scrape(url=seed_url):
 
 def get_html_content(url):
     html = ""
-    response = urlopen(url)
-    if response.getcode() == 200:
-        html = BeautifulSoup(response, 'html5lib')
+    try:
+        response = urlopen(url)
+        if response.getcode() == 200:
+            html = BeautifulSoup(response, 'html5lib')
+    except:
+        pass
 
     return html
 
