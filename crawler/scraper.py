@@ -21,6 +21,8 @@ def scrape(url=seed_url):
                 links.extend(new_list_of_links)
                 links = remove_items(links, each_link)
 
+                links = remove_duplicate(links)
+
                 print(f"Results: {len(results)}, Links: {len(links)}\n")
         else:
             links = remove_items(links, each_link)
@@ -46,3 +48,7 @@ def get_anchor_elements(soup):
 
 def remove_items(list_of_links, item):
     return [i for i in list_of_links if i != item]
+
+
+def remove_duplicate(list_of_links):
+    return list(dict.fromkeys(list_of_links))
