@@ -1,6 +1,7 @@
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
+
 seed_url = "https://www.whenabongcooks.com"
 
 
@@ -9,7 +10,7 @@ def scrape(url=seed_url):
 
     soup = get_html_content(url)
     links = get_anchor_elements(soup)
-    links = sanitize_data(links)
+    # links = sanitize_data(links)
 
     while len(links) != 0:
         each_link = links[0]
@@ -22,12 +23,13 @@ def scrape(url=seed_url):
                 links.extend(new_list_of_links)
                 links = remove_items(links, each_link)
 
-                links = sanitize_data(remove_duplicate(links))
+                links = remove_duplicate(links)
 
                 print(f"Results: {len(results)}, Links: {len(links)}\n")
 
         links = remove_items(links, each_link)
 
+    results = sanitize_data(results)
     return results
 
 
