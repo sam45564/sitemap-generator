@@ -2,10 +2,7 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
 
-seed_url = "https://www.whenabongcooks.com"
-
-
-def scrape(url=seed_url):
+def scrape(url):
     results = []
 
     soup = get_html_content(url)

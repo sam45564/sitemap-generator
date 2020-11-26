@@ -3,10 +3,12 @@ from xml_generator.create import create
 from xml_generator.save import save
 from crawler.scraper import scrape
 
+seed_url = "https://www.whenabongcooks.com"
+
 
 print("Scraping started...\n")
 start_time = datetime.datetime.now()
-data = scrape()
+data = scrape(seed_url)
 
 print("Scraping completed...\n")
 end_time = datetime.datetime.now()
