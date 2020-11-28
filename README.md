@@ -9,6 +9,6 @@ This is a console application written in Python to create xml sitemap.
 ---
 #### How to run the project
 * Clone the project into desired location and `cd` into the project folder.
-* Check the seed url in `main.py` , if required.
+* Check the seed url in `main.py`.
 * Run `python main.py`
 ---
