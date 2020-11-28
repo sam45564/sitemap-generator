@@ -1,36 +1,39 @@
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
+# import threading
+# import logging
+
+result = []
+process_queue = []
+threads = []
 
 
 def scrape(url):
-    results = []
+    """Crawls the given url"""
+    process_queue = get_anchors(get_html(url))
 
-    soup = get_html_content(url)
-    links = get_anchor_elements(soup)
-    # links = sanitize_data(links)
+    while len(process_queue) != 0:
+        try:
+            print(f"--> Total items to be processed: {len(process_queue)}")
+            current_anchor = manage_queue(process_queue)
+            if is_acceptable(result, current_anchor):
+                result.append(current_anchor)
+                print(f"--> Added: {current_anchor}")
 
-    while len(links) != 0:
-        each_link = links[0]
-        if each_link not in results and "whenabongcooks.com/" in each_link:
-            results.append(each_link)
-            s = get_html_content(each_link)
-            if s != "":
-                new_list_of_links = get_anchor_elements(s)
+                new_anchors = get_anchors(get_html(current_anchor))
+                process_queue = purge_duplicates(
+                    manage_queue(process_queue, new_anchors))
+                print(f"--> Added {len(new_anchors)} into the queue")
+            else:
+                print(f"Skipped {current_anchor}\n")
+        except:
+            pass
 
-                links.extend(new_list_of_links)
-                links = remove_items(links, each_link)
-
-                links = remove_duplicate(links)
-
-                print(f"Results: {len(results)}, Links: {len(links)}\n")
-
-        links = remove_items(links, each_link)
-
-    results = sanitize_data(results)
-    return results
+    return purge_duplicates(result)
 
 
-def get_html_content(url):
+def get_html(url):
+    """Return html content of the given url."""
     html = ""
     try:
         response = urlopen(url)
@@ -42,17 +45,25 @@ def get_html_content(url):
     return html
 
 
-def get_anchor_elements(soup):
-    return [i['href'] for i in soup.findAll('a', href=True)]
+def get_anchors(html):
+    """Returns all the anchors from the given html."""
+    return [anchor['href'] for anchor in html.findAll('a', href=True)]
 
 
-def remove_items(list_of_links, item):
-    return [i for i in list_of_links if i != item]
+def purge_duplicates(result):
+    """Removes duplicate items from the final list of anchors"""
+    return list(dict.fromkeys(result))
 
 
-def remove_duplicate(list_of_links):
-    return list(dict.fromkeys(list_of_links))
+def manage_queue(process_queue, new_anchors=None):
+    """Adds or removes the item from process queue list."""
+    if new_anchors != None:
+        process_queue.extend(new_anchors)
+        return process_queue
+    else:
+        return process_queue.pop(0)
 
 
-def sanitize_data(list_of_links):
-    return [char for char in list_of_links if "#" not in char]
+def is_acceptable(final_list, url):
+    """Returns True or False for a url that is to be processed."""
+    return "whenabongcooks.com" in url and "#" not in url and url not in final_list
