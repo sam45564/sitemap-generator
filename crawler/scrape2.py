@@ -7,7 +7,6 @@ results = []
 def scrape(seed_url):
     """Scrapes the given url(seed_url) for retreiving the links."""
     links = []
-
     # Get initial list of anchors from the seed_url
     html = get_html(seed_url)
     if html != "":
@@ -17,7 +16,15 @@ def scrape(seed_url):
     while len(links) > 0:
         links = sanitize_before_processing(links, results, seed_url)
 
-        pass
+        current_link = links.pop(0)
+        if current_link not in results:
+            results.append(current_link)
+
+        new_links = get_anchors(get_html(current_link))
+        links = links + new_links
+
+        print(f"Total links to be processed: {len(links)}\n")
+        print(f"Total links in final result: {len(results)}\n")
 
 
 def get_html(url):
@@ -25,7 +32,7 @@ def get_html(url):
     html = ""
     try:
         response = request.urlopen(url)
-        if response.code != 200:
+        if response.code == 200:
             html = BeautifulSoup(response, 'html5lib')
     except:
         print(f"Could not fetch data for the url: {url}")
