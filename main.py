@@ -1,9 +1,9 @@
-from crawler.scrape2 import scrape
+from crawler.scraper import scrape
 from xml_generator.create import create
 from xml_generator.save import save
 
 # Add the website for which sitemap will be generated.
-seed_url = "https://whenabongcooks.com/"
+seed_url = ""
 
 
 print("Scraping started...\n")

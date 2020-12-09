@@ -1,69 +1,67 @@
-from urllib.request import urlopen
 from bs4 import BeautifulSoup
-# import threading
-# import logging
+from urllib import request, parse
 
-result = []
-process_queue = []
-threads = []
+results = []
 
 
-def scrape(url):
-    """Crawls the given url"""
-    process_queue = get_anchors(get_html(url))
+def scrape(seed_url):
+    """Scrapes the given url(seed_url) for retreiving the links."""
+    links = []
+    # Get initial list of anchors from the seed_url
+    html = get_html(seed_url)
+    if html != "":
+        links = get_anchors(html)
 
-    while len(process_queue) != 0:
-        try:
-            print(f"--> Total items to be processed: {len(process_queue)}")
-            current_anchor = manage_queue(process_queue)
-            if is_acceptable(result, current_anchor):
-                result.append(current_anchor)
-                print(f"--> Added: {current_anchor}")
+    # Iterate over the list of initial anchors and check if they are in results. If not add into list.
+    while len(links) > 0:
+        links = sanitize_before_processing(links, results, seed_url)
 
-                new_anchors = get_anchors(get_html(current_anchor))
-                process_queue = purge_duplicates(
-                    manage_queue(process_queue, new_anchors))
-                print(f"--> Added {len(new_anchors)} into the queue")
-            else:
-                print(f"Skipped {current_anchor}\n")
-        except:
-            pass
+        if len(links) > 0:
+            current_link = links.pop(0)
+            if current_link not in results:
+                results.append(current_link)
 
-    return purge_duplicates(result)
+            html = get_html(current_link)
+            if html != "":
+                new_links = get_anchors(html)
+                links = links + new_links
+
+        print(f"Total links to be processed: {len(links)}")
+        print(f"Total links in final result: {len(results)}\n")
+
+    return results
 
 
 def get_html(url):
-    """Return html content of the given url."""
+    """Returns html content for the given url"""
     html = ""
     try:
-        response = urlopen(url)
-        if response.getcode() == 200:
+        response = request.urlopen(url)
+        if response.code == 200:
             html = BeautifulSoup(response, 'html5lib')
+        if response.code != 200:
+            print(f"Got {response.code} for {url}\n")
     except:
-        pass
+        print(f"Could not fetch data for the url: {url}")
 
     return html
 
 
 def get_anchors(html):
-    """Returns all the anchors from the given html."""
-    return [anchor['href'] for anchor in html.findAll('a', href=True)]
+    """Returns list of anchors for the given html soup"""
+    return [a['href'] for a in html.findAll('a', href=True)]
 
 
-def purge_duplicates(result):
-    """Removes duplicate items from the final list of anchors"""
-    return list(dict.fromkeys(result))
+def sanitize_before_processing(data, result, seed_url):
+    """Returns data without duplicate values and unwanted urls"""
+    host = parse.urlparse(seed_url)
+    # Removes duplicates in the list
+    data = list(dict.fromkeys(data))
 
+    # Excluding url if it doesn't contain seed_url or contains '#' or is already present in final 'result'
+    # NOTE: The conditions in the following list comprehension is specific for a specific website.
+    # Modify the conditions if they are not suitable for your requirements.
+    data = [
+        url for url in data if host.netloc in url and url not in result and "#" not in url and "https://www.addtoany.com/" not in url]
 
-def manage_queue(process_queue, new_anchors=None):
-    """Adds or removes the item from process queue list."""
-    if new_anchors != None:
-        process_queue.extend(new_anchors)
-        return process_queue
-    else:
-        return process_queue.pop(0)
-
-
-def is_acceptable(final_list, url):
-    """Returns True or False for a url that is to be processed."""
-    return "whenabongcooks.com" in url and "#" not in url and url not in final_list
+    return data
